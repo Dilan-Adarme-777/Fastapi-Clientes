@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+.env
+.venv
+.idea/
+.vscode/
+database.db
+instance/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+
+# Byte-compiled / optimized / DLL files
+# VS Code
+.vscode/
