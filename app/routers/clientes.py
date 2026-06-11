@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.cliente import Cliente, ClienteCrear, ClienteORM
 
-router = APIRouter()
 
 @router.get('', response_model=list[Cliente])
 def listar_clientes(db: Session = Depends(get_db)):

@@ -5,7 +5,7 @@ from app.database import get_db
 from app.models.factura import FacturaORM
 from app.models.transaccion import Transaccion, TransaccionCrear, TransaccionORM
 
-router = APIRouter()
+router = APIRouter(tags=['transacciones'])
 
 @router.get('', response_model=list[Transaccion])
 def listar_transacciones(db: Session = Depends(get_db)):

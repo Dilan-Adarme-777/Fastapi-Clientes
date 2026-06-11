@@ -5,7 +5,7 @@ from app.database import get_db
 from app.models.cliente import ClienteORM
 from app.models.factura import Factura, FacturaCrear, FacturaORM
 
-router = APIRouter()
+router = APIRouter(tags=['facturas'])
 
 @router.get('', response_model=list[Factura])
 def listar_facturas(db: Session = Depends(get_db)):
