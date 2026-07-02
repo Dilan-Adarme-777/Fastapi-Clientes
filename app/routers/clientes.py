@@ -4,10 +4,18 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.cliente import Cliente, ClienteCrear, ClienteORM
 
+router = APIRouter(tags=['clientes'])
 
 @router.get('', response_model=list[Cliente])
 def listar_clientes(db: Session = Depends(get_db)):
     return db.query(ClienteORM).all()
+
+@router.get('/{id}', response_model=Cliente)
+def obtener_cliente(id: int, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteORM).filter(ClienteORM.id == id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail='Cliente no encontrado')
+    return cliente
 
 @router.post('', response_model=Cliente, status_code=201)
 def crear_cliente(datos_cliente: ClienteCrear, db: Session = Depends(get_db)):

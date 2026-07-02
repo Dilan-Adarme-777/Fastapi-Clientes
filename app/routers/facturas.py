@@ -11,6 +11,13 @@ router = APIRouter(tags=['facturas'])
 def listar_facturas(db: Session = Depends(get_db)):
     return db.query(FacturaORM).all()
 
+@router.get('/{id}', response_model=Factura)
+def obtener_factura(id: int, db: Session = Depends(get_db)):
+    factura = db.query(FacturaORM).filter(FacturaORM.id == id).first()
+    if not factura:
+        raise HTTPException(status_code=404, detail='Factura no encontrada')
+    return factura
+
 @router.post('', response_model=Factura, status_code=201)
 def crear_factura(datos_factura: FacturaCrear, db: Session = Depends(get_db)):
     cliente = db.query(ClienteORM).filter(ClienteORM.id == datos_factura.cliente).first()
@@ -20,7 +27,6 @@ def crear_factura(datos_factura: FacturaCrear, db: Session = Depends(get_db)):
     factura = FacturaORM(
         fecha=datos_factura.fecha,
         cliente_id=datos_factura.cliente,
-        valortotal=datos_factura.valortotal,
     )
     db.add(factura)
     db.commit()
@@ -39,7 +45,6 @@ def editar_factura(id: int, datos_factura: FacturaCrear, db: Session = Depends(g
 
     factura.fecha = datos_factura.fecha
     factura.cliente_id = datos_factura.cliente
-    factura.valortotal = datos_factura.valortotal
 
     db.commit()
     db.refresh(factura)
@@ -54,3 +59,11 @@ def eliminar_factura(id: int, db: Session = Depends(get_db)):
     db.delete(factura)
     db.commit()
     return factura
+
+@router.get('/{id}/total', response_model=dict)
+def obtener_total_factura(id: int, db: Session = Depends(get_db)):
+    factura = db.query(FacturaORM).filter(FacturaORM.id == id).first()
+    if not factura:
+        raise HTTPException(status_code=404, detail='Factura no encontrada')
+    
+    return {'id': factura.id, 'total': factura.valortotal}

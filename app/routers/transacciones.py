@@ -11,6 +11,13 @@ router = APIRouter(tags=['transacciones'])
 def listar_transacciones(db: Session = Depends(get_db)):
     return db.query(TransaccionORM).all()
 
+@router.get('/{id}', response_model=Transaccion)
+def obtener_transaccion(id: int, db: Session = Depends(get_db)):
+    transaccion = db.query(TransaccionORM).filter(TransaccionORM.id == id).first()
+    if not transaccion:
+        raise HTTPException(status_code=404, detail='Transacción no encontrada')
+    return transaccion
+
 @router.post('', response_model=Transaccion, status_code=201)
 def crear_transaccion(datos_transaccion: TransaccionCrear, db: Session = Depends(get_db)):
     factura = db.query(FacturaORM).filter(FacturaORM.id == datos_transaccion.factura).first()
@@ -19,6 +26,7 @@ def crear_transaccion(datos_transaccion: TransaccionCrear, db: Session = Depends
 
     transaccion = TransaccionORM(
         descripcion=datos_transaccion.descripcion,
+        amount=datos_transaccion.amount,
         factura_id=datos_transaccion.factura,
     )
     db.add(transaccion)
@@ -37,6 +45,7 @@ def editar_transaccion(id: int, datos_transaccion: TransaccionCrear, db: Session
         raise HTTPException(status_code=404, detail='Factura no encontrada')
 
     transaccion.descripcion = datos_transaccion.descripcion
+    transaccion.amount = datos_transaccion.amount
     transaccion.factura_id = datos_transaccion.factura
 
     db.commit()
