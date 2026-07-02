@@ -5,14 +5,13 @@ from app.database import get_db
 from app.models.cliente import ClienteORM
 from app.models.factura import Factura, FacturaCrear, FacturaORM
 
-router = APIRouter(tags=['facturas'])
+router = APIRouter()
+
 
 @router.get('', response_model=list[Factura])
-def listar_facturas(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    """Listar facturas con paginación. Por defecto: skip=0, limit=10"""
-    if skip < 0 or limit <= 0:
-        raise HTTPException(status_code=400, detail='skip debe ser >= 0 y limit debe ser > 0')
-    return db.query(FacturaORM).offset(skip).limit(limit).all()
+def listar_facturas(db: Session = Depends(get_db)):
+    return db.query(FacturaORM).all()
+
 
 @router.get('/{id}', response_model=Factura)
 def obtener_factura(id: int, db: Session = Depends(get_db)):
@@ -21,52 +20,39 @@ def obtener_factura(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail='Factura no encontrada')
     return factura
 
+
 @router.post('', response_model=Factura, status_code=201)
-def crear_factura(datos_factura: FacturaCrear, db: Session = Depends(get_db)):
-    cliente = db.query(ClienteORM).filter(ClienteORM.id == datos_factura.cliente).first()
+def crear_factura(datos: FacturaCrear, db: Session = Depends(get_db)):
+    cliente = db.query(ClienteORM).filter(ClienteORM.id == datos.cliente).first()
     if not cliente:
         raise HTTPException(status_code=404, detail='Cliente no encontrado')
-
-    factura = FacturaORM(
-        fecha=datos_factura.fecha,
-        cliente_id=datos_factura.cliente,
-    )
+    factura = FacturaORM(fecha=datos.fecha, cliente_id=datos.cliente)
     db.add(factura)
     db.commit()
     db.refresh(factura)
     return factura
 
+
 @router.put('/{id}', response_model=Factura)
-def editar_factura(id: int, datos_factura: FacturaCrear, db: Session = Depends(get_db)):
+def editar_factura(id: int, datos: FacturaCrear, db: Session = Depends(get_db)):
     factura = db.query(FacturaORM).filter(FacturaORM.id == id).first()
     if not factura:
         raise HTTPException(status_code=404, detail='Factura no encontrada')
-
-    cliente = db.query(ClienteORM).filter(ClienteORM.id == datos_factura.cliente).first()
+    cliente = db.query(ClienteORM).filter(ClienteORM.id == datos.cliente).first()
     if not cliente:
         raise HTTPException(status_code=404, detail='Cliente no encontrado')
-
-    factura.fecha = datos_factura.fecha
-    factura.cliente_id = datos_factura.cliente
-
+    factura.fecha = datos.fecha
+    factura.cliente_id = datos.cliente
     db.commit()
     db.refresh(factura)
     return factura
+
 
 @router.delete('/{id}', response_model=Factura)
 def eliminar_factura(id: int, db: Session = Depends(get_db)):
     factura = db.query(FacturaORM).filter(FacturaORM.id == id).first()
     if not factura:
         raise HTTPException(status_code=404, detail='Factura no encontrada')
-
     db.delete(factura)
     db.commit()
     return factura
-
-@router.get('/{id}/total', response_model=dict)
-def obtener_total_factura(id: int, db: Session = Depends(get_db)):
-    factura = db.query(FacturaORM).filter(FacturaORM.id == id).first()
-    if not factura:
-        raise HTTPException(status_code=404, detail='Factura no encontrada')
-    
-    return {'id': factura.id, 'total': factura.valortotal}

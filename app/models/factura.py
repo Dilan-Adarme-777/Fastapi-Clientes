@@ -1,23 +1,27 @@
 from datetime import datetime
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.database import Base
 
+
 class FacturaBase(BaseModel):
-    fecha: datetime = Field(..., description="Fecha de la factura")
-    cliente: int = Field(..., gt=0, description="ID del cliente")
+    fecha: datetime
+    cliente: int
+
 
 class FacturaCrear(FacturaBase):
     pass
 
+
 class Factura(FacturaBase):
     id: int
-    valortotal: int = Field(default=0, description="Total calculado de la factura")
+    valortotal: int = 0
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
+
 
 class FacturaORM(Base):
     __tablename__ = "facturas"
@@ -27,17 +31,12 @@ class FacturaORM(Base):
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
 
     cliente_rel = relationship("ClienteORM", back_populates="facturas")
-    transacciones = relationship(
-        "TransaccionORM",
-        back_populates="factura_rel",
-        cascade="all, delete-orphan",
-    )
+    transacciones = relationship("TransaccionORM", back_populates="factura_rel")
 
     @property
-    def valortotal(self) -> int:
-        """Calcula el total sumando los amounts de todas las transacciones"""
+    def valortotal(self):
         return sum(t.amount for t in self.transacciones) if self.transacciones else 0
 
     @property
-    def cliente(self) -> int:
+    def cliente(self):
         return self.cliente_id

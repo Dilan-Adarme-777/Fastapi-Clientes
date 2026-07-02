@@ -1,21 +1,26 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.database import Base
 
+
 class TransaccionBase(BaseModel):
-    descripcion: str = Field(..., min_length=1, description="Descripción de la transacción")
-    amount: int = Field(..., gt=0, description="Monto en enteros para evitar problemas de precisión")
-    factura: int = Field(..., gt=0, description="ID de la factura a la que pertenece")
+    descripcion: str
+    amount: int
+    factura: int
+
 
 class TransaccionCrear(TransaccionBase):
     pass
 
+
 class Transaccion(TransaccionBase):
     id: int
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
+
 
 class TransaccionORM(Base):
     __tablename__ = "transacciones"
@@ -28,5 +33,5 @@ class TransaccionORM(Base):
     factura_rel = relationship("FacturaORM", back_populates="transacciones")
 
     @property
-    def factura(self) -> int:
+    def factura(self):
         return self.factura_id
