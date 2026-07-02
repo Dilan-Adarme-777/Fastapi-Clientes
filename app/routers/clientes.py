@@ -7,8 +7,11 @@ from app.models.cliente import Cliente, ClienteCrear, ClienteORM
 router = APIRouter(tags=['clientes'])
 
 @router.get('', response_model=list[Cliente])
-def listar_clientes(db: Session = Depends(get_db)):
-    return db.query(ClienteORM).all()
+def listar_clientes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """Listar clientes con paginación. Por defecto: skip=0, limit=10"""
+    if skip < 0 or limit <= 0:
+        raise HTTPException(status_code=400, detail='skip debe ser >= 0 y limit debe ser > 0')
+    return db.query(ClienteORM).offset(skip).limit(limit).all()
 
 @router.get('/{id}', response_model=Cliente)
 def obtener_cliente(id: int, db: Session = Depends(get_db)):

@@ -8,8 +8,11 @@ from app.models.factura import Factura, FacturaCrear, FacturaORM
 router = APIRouter(tags=['facturas'])
 
 @router.get('', response_model=list[Factura])
-def listar_facturas(db: Session = Depends(get_db)):
-    return db.query(FacturaORM).all()
+def listar_facturas(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """Listar facturas con paginación. Por defecto: skip=0, limit=10"""
+    if skip < 0 or limit <= 0:
+        raise HTTPException(status_code=400, detail='skip debe ser >= 0 y limit debe ser > 0')
+    return db.query(FacturaORM).offset(skip).limit(limit).all()
 
 @router.get('/{id}', response_model=Factura)
 def obtener_factura(id: int, db: Session = Depends(get_db)):

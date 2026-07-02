@@ -16,6 +16,7 @@ Este proyecto implementa una API REST siguiendo buenas prácticas de desarrollo:
 ✅ Validación automática de datos con Pydantic  
 ✅ Relaciones entre entidades con ForeignKeys  
 ✅ Total de factura calculado automáticamente (suma de transacciones)  
+✅ Paginación en listados (parámetros: `skip` y `limit`)  
 ✅ Documentación interactiva con Swagger (`/docs`)  
 ✅ Base de datos SQLite con SQLAlchemy ORM  
 
@@ -110,6 +111,12 @@ fastapi-clientes/
 | `POST` | `/clientes` | Crear un nuevo cliente |
 | `PUT` | `/clientes/{id}` | Actualizar un cliente |
 | `DELETE` | `/clientes/{id}` | Eliminar un cliente |
+
+**Paginación en listados:** Los endpoints `GET` de listado aceptan:
+- `skip` (int, default=0): Número de registros a saltar
+- `limit` (int, default=10): Número máximo de registros a retornar
+
+Ejemplo: `/clientes?skip=0&limit=20`
 
 **Crear Cliente (POST /clientes)**
 ```json
@@ -258,11 +265,16 @@ Respuesta:
 }
 ```
 
+### 5. Listar clientes con paginación
+```bash
+# Primeros 10 clientes (default)
+curl -X GET "http://localhost:8000/clientes"
+
+# Saltar 10, traer 20
+curl -X GET "http://localhost:8000/clientes?skip=10&limit=20"
+```
+
 ---
-
-## 📄 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 
 ---
 

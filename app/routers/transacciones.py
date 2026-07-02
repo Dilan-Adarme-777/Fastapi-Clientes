@@ -8,8 +8,11 @@ from app.models.transaccion import Transaccion, TransaccionCrear, TransaccionORM
 router = APIRouter(tags=['transacciones'])
 
 @router.get('', response_model=list[Transaccion])
-def listar_transacciones(db: Session = Depends(get_db)):
-    return db.query(TransaccionORM).all()
+def listar_transacciones(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """Listar transacciones con paginación. Por defecto: skip=0, limit=10"""
+    if skip < 0 or limit <= 0:
+        raise HTTPException(status_code=400, detail='skip debe ser >= 0 y limit debe ser > 0')
+    return db.query(TransaccionORM).offset(skip).limit(limit).all()
 
 @router.get('/{id}', response_model=Transaccion)
 def obtener_transaccion(id: int, db: Session = Depends(get_db)):
