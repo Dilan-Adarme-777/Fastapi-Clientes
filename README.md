@@ -49,7 +49,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Instalar dependencias
+### 3. Instalar dependencias.
 ```bash
 pip install -r requerimientos.txt
 ```
